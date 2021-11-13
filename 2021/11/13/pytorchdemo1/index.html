@@ -6,13 +6,17 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://example.com">
-  <title>Archives: 2021/11 | Hexo</title>
+  <title>使用pytorch对一维数据实现简单多分类 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://example.com/archives/2021/11/index.html">
+  <meta name="description" content="使用pytorch对一维数据实现简单多分类Pytorch 是目前最好用的神经网络库之一，最近我写了一个pytorch的简单代码，在这里对其做一个全面的介绍。 在pytorch 中一些常用的功能都已经被封装成了模块，所以我们只需要继承并重写部分函数即可。首先介绍一下本文最终希望实现的目标， 对本地的一维数据 （1xn)的ndarry 进行一个多分类，数据集为mn的数据，标签为m1的数组。下面是结合代">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用pytorch对一维数据实现简单多分类">
+<meta property="og:url" content="http://example.com/2021/11/13/pytorchdemo1/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="使用pytorch对一维数据实现简单多分类Pytorch 是目前最好用的神经网络库之一，最近我写了一个pytorch的简单代码，在这里对其做一个全面的介绍。 在pytorch 中一些常用的功能都已经被封装成了模块，所以我们只需要继承并重写部分函数即可。首先介绍一下本文最终希望实现的目标， 对本地的一维数据 （1xn)的ndarry 进行一个多分类，数据集为mn的数据，标签为m1的数组。下面是结合代">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-11-13T02:06:39.000Z">
+<meta property="article:modified_time" content="2021-11-13T02:31:14.226Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -152,76 +156,194 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
+            <article id="post-pytorchdemo1" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
   
+    <h1 class="article-title" itemprop="name">
+      使用pytorch对一维数据实现简单多分类
+    </h1>
   
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2021" class="archive-year">2021</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2021/11/13/pytorchdemo1/" class="archive-article-date">
+
+        
+        <a href="/2021/11/13/pytorchdemo1/" class="archive-article-date">
   	<time datetime="2021-11-13T02:06:39.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-11-13</time>
 </a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/11/13/pytorchdemo1/">使用pytorch对一维数据实现简单多分类</a>
-    </h1>
-  
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="使用pytorch对一维数据实现简单多分类"><a href="#使用pytorch对一维数据实现简单多分类" class="headerlink" title="使用pytorch对一维数据实现简单多分类"></a>使用pytorch对一维数据实现简单多分类</h1><p>Pytorch 是目前最好用的神经网络库之一，最近我写了一个pytorch的简单代码，在这里对其做一个全面的介绍。</p>
+<p>在pytorch 中一些常用的功能都已经被封装成了模块，所以我们只需要继承并重写部分函数即可。首先介绍一下本文最终希望实现的目标， 对本地的一维数据 （1xn)的ndarry 进行一个多分类，数据集为m<em>n的数据，标签为m</em>1的数组。下面是结合代码记录一下踩坑过程。</p>
+<span id="more"></span>
 
-        <div class="article-info info-on-right">
-          
-          
+<ol>
+<li>继承Dataset类，可以看到我这里重写了三个函数，<strong>init</strong> 函数用于载入numpy数据并将其转化为相应的tensor，__gititem__函数用于定义训练时会返回的单个数据与标签，__len__表示数据数量m。</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyDataSet</span>(<span class="params">torch.utils.data.Dataset</span>):</span></span><br><span class="line">     <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, data, label</span>):</span></span><br><span class="line">         self.data = torch.from_numpy(data).<span class="built_in">float</span>()</span><br><span class="line">         self.label = torch.from_numpy(label)</span><br><span class="line">         self.length = label.shape[<span class="number">0</span>]</span><br><span class="line">     <span class="function"><span class="keyword">def</span> <span class="title">__getitem__</span>(<span class="params">self, index</span>):</span></span><br><span class="line">         <span class="keyword">return</span> self.data[index], self.label[index]</span><br><span class="line">     <span class="function"><span class="keyword">def</span> <span class="title">__len__</span>(<span class="params">self</span>):</span></span><br><span class="line">         <span class="keyword">return</span> self.length</span><br></pre></td></tr></table></figure>
 
+
+<ol start="2">
+<li>通过继承nn.Module来自定义神经网络</li>
+</ol>
+<p>　　其中__init__函数来自定义定义我们需要的网络参数，这里我们block1 的in_channels为1，输出参数可根据需要自己设定，但而且当前层的输出channel应该和下一层的输入channel相同，<br><strong>注意：MaxPool1d的inchannel需要自己计算一下，当然如果你不想算，可以给个参数直接运行，看报错信息的提示</strong><br>　　<strong>forward</strong> 函数定义了网络的连接方式，注意此处应返回x。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">NeuralNetwork</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self</span>):</span></span><br><span class="line">      <span class="built_in">super</span>(NeuralNetwork, self).__init__()</span><br><span class="line">      self.block1 = nn.Sequential(</span><br><span class="line">          nn.Conv1d(in_channels=filter_num[<span class="number">0</span>], out_channels=filter_num[<span class="number">1</span>], padding=<span class="string">&#x27;same&#x27;</span>, stride=conv_stride_size,</span><br><span class="line">                    kernel_size=conv_kernel_size, dtype=dtype),</span><br><span class="line">          nn.BatchNorm1d(filter_num[<span class="number">1</span>],dtype=dtype),</span><br><span class="line">          nn.ReLU(),</span><br><span class="line">          nn.Conv1d(filter_num[<span class="number">1</span>], filter_num[<span class="number">1</span>], kernel_size=conv_kernel_size, stride=conv_stride_size, padding=<span class="string">&#x27;same&#x27;</span>,dtype=dtype),</span><br><span class="line">          nn.BatchNorm1d(filter_num[<span class="number">1</span>],dtype=dtype),</span><br><span class="line">          nn.ReLU(),</span><br><span class="line">          nn.MaxPool1d(kernel_size=pool_kernel_size, stride=pool_stride, padding=pool_padding),</span><br><span class="line">          nn.Dropout(drop_float),</span><br><span class="line">      )</span><br><span class="line">      self.block2=nn.Sequential(</span><br><span class="line">          nn.Conv1d(in_channels=filter_num[<span class="number">1</span>],out_channels=filter_num[<span class="number">2</span>], padding=<span class="string">&#x27;same&#x27;</span>, stride=conv_stride_size,</span><br><span class="line">                    kernel_size=conv_kernel_size, dtype=dtype),</span><br><span class="line">          nn.BatchNorm1d(num_features=filter_num[<span class="number">2</span>],dtype=dtype),</span><br><span class="line">          nn.ReLU(),</span><br><span class="line">          nn.Conv1d(filter_num[<span class="number">2</span>],filter_num[<span class="number">2</span>],kernel_size=conv_kernel_size,stride=conv_stride_size,</span><br><span class="line">                    padding=<span class="string">&#x27;same&#x27;</span>,dtype=dtype),</span><br><span class="line">          nn.BatchNorm1d(filter_num[<span class="number">2</span>],dtype=dtype),</span><br><span class="line">          nn.ReLU(),</span><br><span class="line">          nn.MaxPool1d(kernel_size=pool_kernel_size, stride=pool_stride,padding=pool_padding),</span><br><span class="line">          nn.Dropout(drop_float),</span><br><span class="line">      )</span><br><span class="line">      self.block3=nn.Sequential(</span><br><span class="line">          nn.Conv1d(in_channels=filter_num[<span class="number">2</span>],out_channels=filter_num[<span class="number">3</span>], padding=<span class="string">&#x27;same&#x27;</span>, stride=conv_stride_size,</span><br><span class="line">                    kernel_size=conv_kernel_size, dtype=dtype),</span><br><span class="line">          nn.BatchNorm1d(num_features=filter_num[<span class="number">3</span>],dtype=dtype),</span><br><span class="line">          nn.ReLU(),</span><br><span class="line">          nn.Conv1d(filter_num[<span class="number">3</span>],filter_num[<span class="number">3</span>],kernel_size=conv_kernel_size,stride=conv_stride_size,</span><br><span class="line">                    padding=<span class="string">&#x27;same&#x27;</span>,dtype=dtype),</span><br><span class="line">          nn.BatchNorm1d(filter_num[<span class="number">3</span>],dtype=dtype),</span><br><span class="line">          nn.ReLU(),</span><br><span class="line">          nn.MaxPool1d(kernel_size=pool_kernel_size, stride=pool_stride,padding=pool_padding),</span><br><span class="line">          nn.Dropout(drop_float),</span><br><span class="line">      )</span><br><span class="line">      self.block4=nn.Sequential(</span><br><span class="line">          nn.Conv1d(in_channels=filter_num[<span class="number">3</span>],out_channels=filter_num[<span class="number">4</span>], padding=<span class="string">&#x27;same&#x27;</span>, stride=conv_stride_size,</span><br><span class="line">                    kernel_size=conv_kernel_size, dtype=dtype),</span><br><span class="line">          nn.BatchNorm1d(num_features=filter_num[<span class="number">4</span>],dtype=dtype),</span><br><span class="line">          nn.ReLU(),</span><br><span class="line">          nn.Conv1d(filter_num[<span class="number">4</span>],filter_num[<span class="number">4</span>],kernel_size=conv_kernel_size,stride=conv_stride_size,</span><br><span class="line">                    padding=<span class="string">&#x27;same&#x27;</span>,dtype=dtype),</span><br><span class="line">          nn.BatchNorm1d(filter_num[<span class="number">4</span>],dtype=dtype),</span><br><span class="line">          nn.ReLU(),</span><br><span class="line">          nn.MaxPool1d(kernel_size=pool_kernel_size, stride=pool_stride,padding=pool_padding),</span><br><span class="line">          nn.Dropout(drop_float),</span><br><span class="line">      )</span><br><span class="line">      self.connected = nn.Sequential(</span><br><span class="line">          nn.Flatten(),</span><br><span class="line">          nn.BatchNorm1d(num_features=<span class="number">1280</span> ,dtype=dtype),</span><br><span class="line">          nn.ReLU(),</span><br><span class="line">          nn.Dropout(<span class="number">0.7</span>),</span><br><span class="line">          nn.Flatten(),</span><br><span class="line">          nn.BatchNorm1d(num_features=<span class="number">1280</span> ,dtype=dtype),</span><br><span class="line">          nn.ReLU(),</span><br><span class="line">          nn.Dropout(<span class="number">0.5</span>),</span><br><span class="line">          nn.Linear(<span class="number">1280</span>, <span class="number">180</span>,dtype=dtype)</span><br><span class="line">      )</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, x</span>):</span></span><br><span class="line">      x = self.block1(x)</span><br><span class="line">      x= self.block2(x)</span><br><span class="line">      x= self.block3(x)</span><br><span class="line">      x= self.block4(x)</span><br><span class="line">      x = self.connected(x)</span><br><span class="line">      <span class="keyword">return</span> x</span><br></pre></td></tr></table></figure>
+
+
+<ol start="3">
+<li>主程序。为了更好的说明，先放一下主程序。这里的程序是已经载入了数据的，data是m<em>n 数组，label为m</em>1数组。<br>实例化DataLoader的第一个参数是Dataset的实例，通过DataLoader，其功能是为下文训练和测试过程提供数据。</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">print</span>(<span class="string">&quot;data loading ...&quot;</span>)</span><br><span class="line">train_data_set = MyDataSet(trainingDataLoadProcess.data, trainingDataLoadProcess.label)</span><br><span class="line">test_data_set = MyDataSet(testDataLoadProcess.data, testDataLoadProcess.label)</span><br><span class="line">train_dataloader = DataLoader(train_data_set, batch_size=batch_size, shuffle=shuffle)</span><br><span class="line">test_dataloader = DataLoader(test_data_set, batch_size=batch_size, shuffle=shuffle)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;model constructing...&quot;</span>)</span><br><span class="line">model_test = NeuralNetwork()</span><br><span class="line">loss_fn = nn.CrossEntropyLoss()</span><br><span class="line">optimizer = torch.optim.Adamax(model_test.parameters(), lr=learning_rate, betas=(beta_1, beta_2), weight_decay=<span class="number">0.0</span>)</span><br><span class="line"><span class="built_in">print</span>(model_test)</span><br><span class="line"><span class="keyword">for</span> t <span class="keyword">in</span> <span class="built_in">range</span>(epochs):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&#x27;Epoch<span class="subst">&#123;t + <span class="number">1</span>&#125;</span>\n-------------&#x27;</span>)</span><br><span class="line">    train_loop(train_dataloader, model_test, loss_fn, optimizer)</span><br><span class="line">    test_loop(test_dataloader, model_test, loss_fn)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Done!&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+
+<ol start="4">
+<li>定义训练阶段，从DataLoader中取出数据，这里X，y分别为batch_size<em>n，batch_size</em>1的数据。<br>首先要进行一个调整，将X调整为batch_size<em>1</em>n的float,设置float的转化过程放在Dataset的初始化函数里完成了<br><em>注意：如果没有这一步会报错</em></li>
+</ol>
+<blockquote>
+<p>期望是long但得到了float的错误。(虽然我也不明白为啥错误不是期望float…）</p>
+</blockquote>
+<p>y为1*batch的数组并转化成long（这里y的形式可能与损失函数有关）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">train_loop</span>(<span class="params">dataloader, model, loss_fn, optimizer</span>):</span></span><br><span class="line">    size = <span class="built_in">len</span>(dataloader.dataset)</span><br><span class="line">    <span class="keyword">for</span> batch, (X, y) <span class="keyword">in</span> <span class="built_in">enumerate</span>(dataloader):</span><br><span class="line">        X = X.unsqueeze(<span class="number">1</span>)</span><br><span class="line">        y=y.squeeze(<span class="number">1</span>).long()</span><br><span class="line">        pred = model(X)</span><br><span class="line">        loss = loss_fn(pred, y)</span><br><span class="line">        optimizer.zero_grad()</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br></pre></td></tr></table></figure>
+
+
+<ol start="5">
+<li>定义测试过程（同上）</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_loop</span>(<span class="params">dataloader, model, loss_fn</span>):</span></span><br><span class="line">    size = <span class="built_in">len</span>(dataloader.dataset)</span><br><span class="line">    num_batches = <span class="built_in">len</span>(dataloader)</span><br><span class="line">    test_loss, correct = <span class="number">0</span>, <span class="number">0</span></span><br><span class="line">    <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">        <span class="keyword">for</span> X, y <span class="keyword">in</span> dataloader:</span><br><span class="line">            X = X.unsqueeze(<span class="number">1</span>)</span><br><span class="line">            y=y.squeeze(<span class="number">1</span>).long()</span><br><span class="line">            pred = model(X)</span><br><span class="line">            test_loss = loss_fn(pred, y).item()</span><br><span class="line">            correct += (pred.argmax(<span class="number">1</span>) == y).<span class="built_in">type</span>(torch.<span class="built_in">float</span>).<span class="built_in">sum</span>().item()</span><br><span class="line">    test_loss /= num_batches</span><br><span class="line">    correct /= size</span><br></pre></td></tr></table></figure>
+
+<p>大体流程就是这些，最后记得修改加入输出语句与保存模型等操作。</p>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
+        </div>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://example.com/2021/11/13/pytorchdemo1/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2021/11/12/%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2/" class="archive-article-date">
-  	<time datetime="2021-11-12T02:40:52.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-11-12</time>
-</a>
+<nav id="article-nav">
+  
+  
+    <a href="/2021/11/12/%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">搭建博客的注意事项</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
+        
+        
+    </div>
+</aside>
+
+
+
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/11/12/%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2/">搭建博客的注意事项</a>
-    </h1>
+  
   
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
   
 
-    
+  
+
+  
 
 
           </div>
@@ -244,8 +366,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
